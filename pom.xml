@@ -54,6 +54,11 @@
             <artifactId>msgparser</artifactId>
             <version>1.1.15</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

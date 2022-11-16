@@ -2,7 +2,9 @@ package ic.devops.uploadingfiles.emailing;
 
 import com.auxilii.msgparser.Message;
 import com.auxilii.msgparser.MsgParser;
+import ic.devops.uploadingfiles.constants.ActivityTemplateConstants;
 import ic.devops.uploadingfiles.exceptions.PEAEmailNotParsedException;
+import ic.devops.uploadingfiles.model.EscalationActivity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,5 +50,17 @@ public class MsgEmailParser implements IEmailParser{
         }
         activityDetails.entrySet().stream().forEach((e)-> System.out.println(e));
         return activityDetails;
+    }
+
+    public EscalationActivity parseActivity(MultipartFile msgFile) throws PEAEmailNotParsedException {
+        EscalationActivity activity = new EscalationActivity();
+        Map<String, String> activityDetails = parseBody(getEmailBody(msgFile));
+        activity.setType(activityDetails.get(ActivityTemplateConstants.TYPE));
+        activity.setCustomer(activityDetails.get(ActivityTemplateConstants.CUSTOMER));
+        activity.setPriority(activityDetails.get(ActivityTemplateConstants.PRIORITY));
+        activity.setCreatedBy(activityDetails.get(ActivityTemplateConstants.CREATED_BY));
+
+
+        return activity;
     }
 }
