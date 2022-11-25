@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html xmlns:th="https://www.thymeleaf.org">
+<html xmlns:th="https://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8"/>
     <title>IC Activities Tracker</title>
@@ -11,8 +11,6 @@
 <body>
 
 <!-- Navigation -->
-
-
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
     <div class="container">
@@ -43,52 +41,36 @@
     </div>
 </nav>
 
-<div th:if="${message}">
-    <h2 th:text="${message}"/>
-</div>
-
 <div class="container">
     <div class="row">
         <div class="col-lg-8 mt-5">
 
+            <div th:if="${message}">
+                <h2 th:text="${message}"/>
+            </div>
+
             <div id="dropzone">
-                <form method="POST" enctype="multipart/form-data" action="/" class="dropzone needsclick" id="demo-upload">
+                <form action="/upload" class="dropzone needsclick" id="demo-upload">
 
                     <div class="dz-message needsclick">
                         <button type="button" class="dz-button">Drop files here or click to upload.</button>
                         <br/>
                     </div>
+
                 </form>
-
-                <div>
-                    <h2> "Elochka" </h2>
-                    <h2 th:text="${message}"/>
-                </div>
-
             </div>
 
         </div>
     </div>
-
 </div>
 
-<!--div class="container">
-    <form method="POST" enctype="multipart/form-data" th:action="@{/add}" th:object="${activity}">
-        <label for="srId">SR ID</label>
-        <input type="text" th:field="*{srId}" id="srId" placeholder="srId">
-
-        <label for="peaId">PEA ID</label>
-        <input type="text" th:field="*{activityID}" id="peaId" placeholder="peaId">
-
-        <label for="type">SR ID</label>
-        <input type="text" th:field="*{type}" id="type" placeholder="srId">
-
+<div>
+    <form method="POST" action="/pressAdd">
+        <table>
+            <tr><td></td><td><input type="submit" value="Add" /></td></tr>
+        </table>
     </form>
-</div-->
-
-<h2>
-    <span th:text="'Hello, ' + ${message2}"></span>
-</h2>
+</div>
 
 <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
 <script th:src="@{/webjars/popper.js/umd/popper.min.js}"></script>
@@ -96,32 +78,69 @@
 <script th:src="@{/assets/dropzonejs/dropzone.min.js}"></script>
 <script th:src="@{/assets/toastr/toastr.min.js}"></script>
 
+
+
 <script>
     Dropzone.autoDiscover = false;
 
     $("#demo-upload").dropzone({
         success : function(file, response) {
             toastr.success('File ' + file.name + ' uploaded successfully');
+            document.write(response);
         }
     });
+
+
 </script>
 
-<div>
-    <form method="POST" enctype="multipart/form-data" action="/">
-        <table>
-            <tr><td>File to upload:</td><td><input type="file" name="file" /></td></tr>
-            <tr><td></td><td><input type="submit" value="Upload" /></td></tr>
-        </table>
-    </form>
-</div>
 
+<!--div th:if="${message}">
+    <h2 th:text="${message}"/>
+</div-->
 <div>
+    <h2> Files: </h2>
     <ul>
         <li th:each="file : ${files}">
             <a th:href="${file}" th:text="${file}" />
         </li>
     </ul>
 </div>
+
+<div th:if="${duplicateActivity}">
+    <p> The activity with this ID is already in DB </p>
+</div>
+
+<div th:if="${activity}">
+    <form method="POST" action="/saveNew">
+        <table>
+            <tr><td>SR ID</td>
+                <td> <input type="text" disabled=true th:field="*{activity.srId}" id="srId"/></td> </tr>
+            <tr><td>Act ID</td>
+                <td> <input type="text" disabled=true th:field="*{activity.activityID}" id="activityID"/> </td></tr>
+            <tr><td>SR Name</td>
+                <td><input type="text" disabled=true th:field="*{activity.srTitle}" id="srTitle"/> </td></tr>
+            <tr><td>Activity Name</td>
+                <td><input type="text" th:field="*{activity.actTitle}"/> </td></tr>
+            <tr><td>Customer</td>
+                <td><input type="text" th:field="*{activity.customer}"/> </td></tr>
+            <tr><td>CreatedBy</td>
+                <td><input type="text" disabled=true th:field="*{activity.createdBy}"/> </td></tr>
+            <tr><td>Creation date</td>
+                <td><input type="text" disabled=true th:field="*{activity.creationDate}"/> </td></tr>
+            <tr><td>Type</td>
+                <td><input type="text" disabled=true th:field="*{activity.type}"/> </td></tr>
+            <tr><td>Priority</td>
+                <td><input type="text" disabled=true th:field="*{activity.priority}"/> </td></tr>
+
+            <tr><td></td><td><input type="submit" value="Save" /></td></tr>
+        </table>
+    </form>
+</div>
+
+
+
+
+
 
 </body>
 </html>

@@ -1,21 +1,19 @@
 package ic.devops.uploadingfiles.model;
 
+import javax.persistence.*;
 import java.util.Date;
 
+@Entity
+@Table(name="escalations")
 public class EscalationActivity {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
     private String srId;
     private String activityID;
-    private String title;
-
-    public String getPriority() {
-        return priority;
-    }
-
-    public void setPriority(String priority) {
-        this.priority = priority;
-    }
-
+    private String actTitle;
+    private String srTitle;
     private String type;
     private String priority;
     private String createdBy;
@@ -24,6 +22,7 @@ public class EscalationActivity {
     private Date creationDate;
 
     public EscalationActivity() {
+        createdBy = "Sashka";
     }
 
     public String getSrId() {
@@ -42,12 +41,12 @@ public class EscalationActivity {
         this.activityID = activityID;
     }
 
-    public String getTitle() {
-        return title;
+    public String getActTitle() {
+        return actTitle;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setActTitle(String actTitle) {
+        this.actTitle = actTitle;
     }
 
     public String getType() {
@@ -89,4 +88,13 @@ public class EscalationActivity {
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
+
+    public String getPriority() { return priority;  }
+
+    public void setPriority(String priority) { this.priority = priority; }
+
+    public String getSrTitle() { return srTitle; }
+
+    public void setSrTitle(String srTitle) { this.srTitle = srTitle; }
+
 }

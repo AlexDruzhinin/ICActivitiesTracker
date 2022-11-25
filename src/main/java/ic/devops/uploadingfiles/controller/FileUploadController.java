@@ -1,74 +1,130 @@
 package ic.devops.uploadingfiles.controller;
 
 import java.io.IOException;
-import java.util.stream.Collectors;
 
+import ic.devops.uploadingfiles.dao.ActivityRepository;
 import ic.devops.uploadingfiles.emailing.MsgEmailParser;
 import ic.devops.uploadingfiles.exceptions.PEAEmailNotParsedException;
 import ic.devops.uploadingfiles.model.EscalationActivity;
+import ic.devops.uploadingfiles.storage.StorageFileNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import ic.devops.uploadingfiles.storage.StorageService;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 
-import javax.validation.Valid;
-
-@Slf4j
+//@Slf4j
 @Controller
-@RequestMapping("/")
+//@RequestMapping("/")
 
 public class FileUploadController {
 
     private final StorageService storageService;
     private final MsgEmailParser emailParser;
-
-    private EscalationActivity activity;
+    private final ActivityRepository activityRepository;
+    //private EscalationActivity activity;
+    private boolean isDuplicate;
 
     @Autowired
-    public FileUploadController(StorageService storageService, MsgEmailParser emailParser) {
+    public FileUploadController(StorageService storageService, MsgEmailParser emailParser, ActivityRepository activityRepository) {
         this.storageService = storageService;
         this.emailParser = emailParser;
+        this.activityRepository = activityRepository;
     }
 
-    @GetMapping
-    public String main() {
-        System.out.println("!!! main !!!");
+
+    @GetMapping("/")
+    public String showNewActivityForm(@ModelAttribute("activity") EscalationActivity activity, Model model) throws IOException {
+        System.out.println("listUploadedFiles");
+        if (!model.containsAttribute("message")) {
+            System.out.println("message is empty");
+        }
+        if (activity == null) {
+            activity = new EscalationActivity();
+            System.out.println("activity was null, created!");
+        }
+        else {
+            if (activity.getActivityID() != null) {
+                System.out.println(activity.getActivityID());
+            }
+        }
+        if (activity.getActivityID() != null) {
+            model.addAttribute("activity", activity);
+        }
+        /*model.addAttribute("files", storageService.loadAll().map(
+                        path -> MvcUriComponentsBuilder.fromMethodName(FileUploadController.class,
+                                "serveFile", path.getFileName().toString()).build().toUri().toString())
+                .collect(Collectors.toList()));*/
+
         return "uploadForm";
     }
 
-    @PostMapping
-    public String upload(@RequestParam("file") MultipartFile file, /*@ModelAttribute("activity") EscalationActivity activity,*/ Model model,
-                         RedirectAttributes redirectAttributes) throws PEAEmailNotParsedException {
+    @GetMapping("/files/{filename:.+}")
+    @ResponseBody
+    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
 
-        System.out.println("!!! upload !!!");
+        Resource file = storageService.loadAsResource(filename);
+        return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + file.getFilename() + "\"").body(file);
+    }
+
+
+    @PostMapping("/upload")
+    public String handleFileUpload(@RequestParam("file") MultipartFile file,
+                         RedirectAttributes redirectAttributes, Model model) throws PEAEmailNotParsedException {
+        EscalationActivity activity;
+
         if (file != null) {
             activity = emailParser.parseActivity(file);
+            if (activityRepository.findByActivityID(activity.getActivityID()) != null) {
+                isDuplicate = true;
+                System.out.println("duplicate");
+                redirectAttributes.addFlashAttribute("duplicateActivity", "DuplicateMessgae");
+            }
+            //storageService.store(file);
+            System.out.println("!!! upload !!!");
+            redirectAttributes.addFlashAttribute("message",
+                    "You successfully uploaded " + file.getOriginalFilename() + "!");
+            redirectAttributes.addFlashAttribute("activity", activity);
+            model.addAttribute("activity", activity);
         }
-        //log.info("uploaded file " + file.getOriginalFilename() + "; \n" + emailParser.getEmailBody(file));
-        //emailParser.parseBody(emailParser.getEmailBody(file));
+        return "redirect:/";
 
-        //model.addAttribute("message2", "The following activity will be created and added to DB");
-        model.addAttribute("message", "Sashka");
 
-        //model.addAttribute("values",  emailParser.parseBody(emailParser.getEmailBody(file)));
-
-        return "uploadForm";
     }
 
-    @PostMapping("/add")
-    public String addUser(@Valid EscalationActivity activity, BindingResult result, Model model) {
-
-        return "uploadForm";
+    @ExceptionHandler(StorageFileNotFoundException.class)
+    public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
+        return ResponseEntity.notFound().build();
     }
+
+    @PostMapping("/pressAdd")
+    public String pressAdd(@ModelAttribute("activity") EscalationActivity activity, Model model) {
+        System.out.println("pressAdd()");
+        return "redirect:/";
+    }
+
+    @PostMapping("/saveNew")
+    public String saveNew(@ModelAttribute("activity") EscalationActivity activity) {
+        //activityRepository.save(activity);
+        System.out.println("saveNew()");
+        return "activitiesList";
+    }
+
+    @GetMapping ("/toNew")
+    public String toNew() {
+        System.out.println("to new!!!");
+        return "activitiesList";
+    }
+
+
 }

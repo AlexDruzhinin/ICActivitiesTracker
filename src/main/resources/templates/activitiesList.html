@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>IC Activities Tracker</title>
+
+</head>
+<body>
+
+
+<h2 text=List of activities> </h2>
+
+<table>
+    <thead>
+        <tr>
+            <th> SR ID </th>
+            <th> Activity ID </th>
+            <th> Type </th>
+            <th> Title </th>
+            <th> Status </th>
+            <th> Assignee </th>
+
+        </tr>
+    </thead>
+    <tbody>
+    <!--tr th:if="${books.empty}">
+        <td colspan="2"> No Books Available </td>
+    </tr-->
+    <tr th:each="activity : ${activities}">
+        <td><span th:text="${activity.srId}"> Title </span></td>
+        <td> <a href=/${activity.activityID} /> <span th:text="${activity.activityID}"> </span> </td>
+        <td><span th:text="${activity.type}"> Author </span></td>
+        <td><span th:text="${activity.actTitle}"> Author </span></td>
+        <td><span th:text="${activity.customer}"> Author </span></td>
+        <td><span th:text="${activity.srTitle}"> Author </span></td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
